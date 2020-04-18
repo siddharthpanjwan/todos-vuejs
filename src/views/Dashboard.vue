@@ -1,47 +1,74 @@
 <template>
-  <div>
+  <div class="container">
+    <h4 class="text-center">Todos</h4>
+    <h5>welcome {{name}}</h5>
+
     <form>
-      <div class="form-group col-md-5 offset-3">
-        <label style="margin:20px 0px;">Enter Todos</label>
-        <textarea v-model="todo" class="form-control"></textarea>
+      <div class="form-group">
+        <label>Enter Todo</label>
+        <input class="form-control col-md-4" v-model="todo" type="text" />
       </div>
-      <div class="form-group col-md-6 offset-3">
-        <button class="btn btn-primary" @click.prevent="addTodo">Add Todo</button>
+      <div class="form-group">
+        <button class="btn btn-primary col-md-4" @click.prevent="addTodo">Submit</button>
       </div>
     </form>
-    <div class="card">
-      <div class="card-header">Quote</div>
-      <div class="card-body">
-        <p v-for="x in gettodos" :key="x.id">{{x.todo}}</p>
-      </div>
-    </div>
+    <p v-for="todo in todos" :key="todo.id">{{ todo }}</p>
   </div>
 </template>
 
 <script>
-//mport Axios from "axios";
-//import { mapActions } from "vuex";
+import Axios from "axios";
+import firebase from "firebase";
+
 export default {
   data() {
     return {
-      todo: ""
+      todo: "",
+      id: 2,
+      todos: [],
+      name: null
     };
   },
   methods: {
     addTodo() {
-      this.$store.dispatch("posttodos", this.todo);
-      this.$store.dispatch("gettodosfromfirebase");
-    },
-    computed: {
-      gettodos() {
-        return this.$store.getters.gettodos;
+      const todo = { todo: this.todo, id: this.id };
+      this.todos.push(todo);
+      this.id += 1;
+      Axios.post("https://my-todos-app-a3ee6.firebaseio.com/todos.json", {
+        todo: this.todo
+      })
+        .then(function(response) {
+          console.log(response);
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
+      this.todo = "";
+    }
+  },
+  created() {
+    Axios.get("https://my-todos-app-a3ee6.firebaseio.com/todos.json").then(
+      res => {
+        console.log(res);
+        const data = res.data;
+        const mytodos = [];
+        for (let key in data) {
+          const todo = data[key];
+          todo.id = key;
+          mytodos.push(todo);
+        }
+        this.todos = mytodos;
       }
-    },
-    created() {
-      this.$store.dispatch("gettodosfromfirebase");
+    );
+
+    const user = firebase.auth().currentUser;
+    if (user != null) {
+      this.todoname = user.displayName;
+      console.log(name);
     }
   }
 };
 </script>
 
-<style></style>
+<style>
+</style>
