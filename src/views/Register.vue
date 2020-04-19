@@ -6,7 +6,7 @@
           <div class="card-header">Register</div>
           <div class="card-body">
             <div v-if="error" class="alert alert-danger">{{ error }}</div>
-            <form action="#" @submit.prevent="submit">
+            <form>
               <div class="form-group row">
                 <label for="name" class="col-md-4 col-form-label text-md-right">Name</label>
 
@@ -58,7 +58,11 @@
 
               <div class="form-group row mb-0">
                 <div class="col-md-3 offset-md-5" style="padding-top:22px;">
-                  <button type="submit" class="btn btn-primary btn-block" @click="register">Register</button>
+                  <button
+                    type="submit"
+                    class="btn btn-primary btn-block"
+                    @click.prevent="register"
+                  >Register</button>
                 </div>
               </div>
             </form>
