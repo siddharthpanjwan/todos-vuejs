@@ -12,15 +12,18 @@
       </span>
     </div>
     <div class="card offset-md-4 col-md-4 input-groups">
-      <div class="card-header text-center">Todos</div>
+      <div class="card-header text-center">{{ name }}</div>
       <ul class="list-group list-group-flush" v-for="(todo,index) in todos" :key="todo.id">
-        <li class="list-group-item">
+        <li class="list-group-item" :class="{'iscompleted':todo.iscompleted}">
           {{todo.todo}}
           <button
             class="float-right button btn btn-danger btn-sm"
             @click.prevent="deleteTodo(index,todo.id)"
           >Remove</button>
-          <button class="float-right button btn btn-info btn-sm">Completed</button>
+          <button
+            class="float-right button btn btn-info btn-sm"
+            @click.prevent="todoCompleted(index,todo.id,!iscompleted,todo.todo)"
+          >Completed</button>
         </li>
       </ul>
     </div>
@@ -34,6 +37,9 @@
 .button {
   margin-left: 15px;
 }
+.iscompleted {
+  text-decoration: line-through;
+}
 </style>
 
 <script>
@@ -43,6 +49,7 @@ import firebase from "firebase";
 export default {
   data() {
     return {
+      iscompleted: false,
       todo: "",
       id: 2,
       todos: [],
@@ -60,6 +67,7 @@ export default {
         this.id += 1;
         Axios.post("https://my-todos-app-a3ee6.firebaseio.com/todos.json", {
           todo: this.todo,
+          iscompleted: false,
           uid: this.uid
         })
           .then(function(response) {
@@ -70,6 +78,25 @@ export default {
           });
         this.todo = "";
       }
+    },
+    todoCompleted(index, id, value, todo) {
+      this.todos[index].iscompleted = !this.todos[index].iscompleted;
+      firebase
+        .database()
+        .ref("todos/" + id)
+        .set({
+          iscompleted: value,
+          todo: todo,
+          id: id,
+          uid: this.uid
+        })
+        .then(() => {
+          console.log("status updated successfully");
+          this.iscompleted = value;
+        })
+        .catch(err => {
+          console.log("error: " + err.message);
+        });
     },
     deleteTodo(index, id) {
       console.log(id);
@@ -98,8 +125,7 @@ export default {
     const user = firebase.auth().currentUser;
     if (user != null) {
       this.uid = user.uid;
-      this.todoname = user.displayName;
-      console.log(name);
+      this.name = user.displayName;
     }
     Axios.get("https://my-todos-app-a3ee6.firebaseio.com/todos.json").then(
       res => {
