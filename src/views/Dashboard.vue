@@ -54,7 +54,6 @@ export default {
   components: { navbar },
   data() {
     return {
-      iscompleted: false,
       todo: "",
       id: 2,
       todos: [],
@@ -67,7 +66,12 @@ export default {
       if (this.todo === "") {
         alert("please enter something");
       } else {
-        const todo = { todo: this.todo, id: this.id, uid: this.uid };
+        const todo = {
+          todo: this.todo,
+          id: this.id,
+          uid: this.uid,
+          iscompleted: false
+        };
         this.todos.push(todo);
         this.id += 1;
         Axios.post("https://my-todos-app-a3ee6.firebaseio.com/todos.json", {
@@ -85,7 +89,6 @@ export default {
       }
     },
     todoCompleted(index) {
-      this.iscompleted = !this.iscompleted;
       this.todos[index].iscompleted = !this.todos[index].iscompleted;
       console.log(this.todos);
       Axios.put(
