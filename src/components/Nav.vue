@@ -1,30 +1,41 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-light bg-dark">
-    <a class="navbar-brand text-white">Navbar</a>
-    <button class="navbar-toggler" type="button">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+  <div>
+    <!-- example 1 - using absolute position for center -->
+    <nav class="navbar navbar-expand-md navbar-dark bg-primary">
+      <a class="navbar-brand abs">Welcome {{name}}</a>
 
-    <div class="collapse navbar-collapse show">
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item">
-          <a class="nav-link text-white">Home</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-white">Link</a>
-        </li>
-
-        <li class="nav-item">
-          <a class="nav-link text-white">services</a>
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item" @click="Logout">
+          <a class="nav-link active btn btn-primary">Sign Out</a>
         </li>
       </ul>
-    </div>
-  </nav>
+    </nav>
+  </div>
 </template>
 
 <script>
-export default {};
+import firebase from "firebase/app";
+export default {
+  props: ["name"],
+  methods: {
+    Logout() {
+      console.log("signout clicked");
+      firebase
+        .auth()
+        .signOut()
+        .then(() => {
+          this.$router.replace({ name: "Login" });
+        });
+    }
+  }
+};
 </script>
 
 <style>
+@media (min-width: 768px) {
+  .navbar-brand.abs {
+    left: 0;
+    text-align: center;
+  }
+}
 </style>

@@ -1,33 +1,36 @@
 <template>
-  <form>
-    <div class="input-group">
-      <input
-        type="text"
-        placeholder="What needs to be done ?"
-        class="form-control offset-md-4 col-md-3 input-groups"
-        v-model="todo"
-      />
-      <span>
-        <button class="btn btn-primary input-groups" @click.prevent="addTodo">Add Todo</button>
-      </span>
-    </div>
-    <div class="card offset-md-4 col-md-4 input-groups">
-      <div class="card-header text-center">{{ name }}</div>
-      <ul class="list-group list-group-flush" v-for="(todo,index) in todos" :key="todo.id">
-        <li class="list-group-item" :class="{'iscompleted':todo.iscompleted}">
-          {{todo.todo}}
-          <button
-            class="float-right button btn btn-danger btn-sm"
-            @click.prevent="deleteTodo(index,todo.id)"
-          >Remove</button>
-          <button
-            class="float-right button btn btn-info btn-sm"
-            @click.prevent="todoCompleted(index,todo.id,!iscompleted,todo.todo)"
-          >Completed</button>
-        </li>
-      </ul>
-    </div>
-  </form>
+  <div>
+    <navbar :name="name"></navbar>
+    <form>
+      <div class="input-group">
+        <input
+          type="text"
+          placeholder="What needs to be done ?"
+          class="form-control offset-md-4 col-md-3 input-groups"
+          v-model="todo"
+        />
+        <span>
+          <button class="btn btn-primary input-groups" @click.prevent="addTodo">Add Todo</button>
+        </span>
+      </div>
+      <div class="card offset-md-4 col-md-4 input-groups">
+        <div class="card-header text-center">My Todos</div>
+        <ul class="list-group list-group-flush" v-for="(todo,index) in todos" :key="todo.id">
+          <li class="list-group-item" :class="{'iscompleted':todo.iscompleted}">
+            {{todo.todo}}
+            <button
+              class="float-right button btn btn-danger btn-sm"
+              @click.prevent="deleteTodo(index)"
+            >Remove</button>
+            <button
+              class="float-right button btn btn-info btn-sm"
+              @click.prevent="todoCompleted(index)"
+            >Completed</button>
+          </li>
+        </ul>
+      </div>
+    </form>
+  </div>
 </template>
 
 <style>
@@ -43,10 +46,12 @@
 </style>
 
 <script>
+import navbar from "../components/Nav.vue";
 import Axios from "axios";
 import firebase from "firebase";
 
 export default {
+  components: { navbar },
   data() {
     return {
       iscompleted: false,
@@ -62,7 +67,7 @@ export default {
       if (this.todo === "") {
         alert("please enter something");
       } else {
-        const todo = { todo: this.todo, id: this.id };
+        const todo = { todo: this.todo, id: this.id, uid: this.uid };
         this.todos.push(todo);
         this.id += 1;
         Axios.post("https://my-todos-app-a3ee6.firebaseio.com/todos.json", {
@@ -79,45 +84,32 @@ export default {
         this.todo = "";
       }
     },
-    todoCompleted(index, id, value, todo) {
+    todoCompleted(index) {
+      this.iscompleted = !this.iscompleted;
       this.todos[index].iscompleted = !this.todos[index].iscompleted;
-      firebase
-        .database()
-        .ref("todos/" + id)
-        .set({
-          iscompleted: value,
-          todo: todo,
-          id: id,
-          uid: this.uid
-        })
-        .then(() => {
-          console.log("status updated successfully");
-          this.iscompleted = value;
-        })
-        .catch(err => {
-          console.log("error: " + err.message);
-        });
-    },
-    deleteTodo(index, id) {
-      console.log(id);
-      this.todos.splice(index, 1);
-      firebase
-        .database()
-        .ref("todos/" + id)
-        .remove()
-        .then(() => {
-          console.log("removed successfully");
+      console.log(this.todos);
+      Axios.put(
+        "https://my-todos-app-a3ee6.firebaseio.com/todos.json",
+        this.todos
+      )
+        .then(res => {
+          console.log(res);
         })
         .catch(err => {
           console.log(err.message);
         });
     },
-    Logout() {
-      firebase
-        .auth()
-        .signOut()
-        .then(() => {
-          this.$router.replace({ name: "Login" });
+    deleteTodo(index) {
+      this.todos.splice(index, 1);
+      Axios.put(
+        "https://my-todos-app-a3ee6.firebaseio.com/todos.json",
+        this.todos
+      )
+        .then(res => {
+          console.log(res);
+        })
+        .catch(err => {
+          console.log(err.message);
         });
     }
   },
